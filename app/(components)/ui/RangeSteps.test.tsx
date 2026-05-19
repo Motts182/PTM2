@@ -103,4 +103,40 @@ describe("Range — steps mode", () => {
 
     expect(mockOnChange).not.toHaveBeenCalled()
   })
+
+  test("ArrowRight on min handle increments min step index", () => {
+    const { container } = render(
+      <Range steps={mockValues} currentMin={0} currentMax={5} onChange={mockOnChange} />
+    )
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.keyDown(minHandle, { key: "ArrowRight" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 1, max: 5 })
+  })
+
+  test("ArrowLeft on max handle decrements max step index", () => {
+    const { container } = render(
+      <Range steps={mockValues} currentMin={0} currentMax={5} onChange={mockOnChange} />
+    )
+    const maxHandle = container.querySelectorAll(".rounded-full")[1]
+    fireEvent.keyDown(maxHandle, { key: "ArrowLeft" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 4 })
+  })
+
+  test("Home key moves min handle to first step", () => {
+    const { container } = render(
+      <Range steps={mockValues} currentMin={3} currentMax={5} onChange={mockOnChange} />
+    )
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.keyDown(minHandle, { key: "Home" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 5 })
+  })
+
+  test("End key moves max handle to last step", () => {
+    const { container } = render(
+      <Range steps={mockValues} currentMin={0} currentMax={2} onChange={mockOnChange} />
+    )
+    const maxHandle = container.querySelectorAll(".rounded-full")[1]
+    fireEvent.keyDown(maxHandle, { key: "End" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 5 })
+  })
 })

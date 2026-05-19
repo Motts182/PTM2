@@ -245,4 +245,72 @@ describe("Range — free mode", () => {
     expect(mockOnChange).not.toHaveBeenCalled()
     expect(screen.getByText(/El valor máximo permitido es 100/)).toBeInTheDocument()
   })
+
+  test("handles have role=slider and tabIndex=0", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    container.querySelectorAll(".rounded-full").forEach((h) => {
+      expect(h).toHaveAttribute("role", "slider")
+      expect(h).toHaveAttribute("tabindex", "0")
+    })
+  })
+
+  test("ArrowRight on min handle increments min by 1", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.keyDown(minHandle, { key: "ArrowRight" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 21, max: 80 })
+  })
+
+  test("ArrowLeft on min handle decrements min by 1", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.keyDown(minHandle, { key: "ArrowLeft" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 19, max: 80 })
+  })
+
+  test("ArrowRight on max handle increments max by 1", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const maxHandle = container.querySelectorAll(".rounded-full")[1]
+    fireEvent.keyDown(maxHandle, { key: "ArrowRight" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 20, max: 81 })
+  })
+
+  test("ArrowLeft on max handle decrements max by 1", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const maxHandle = container.querySelectorAll(".rounded-full")[1]
+    fireEvent.keyDown(maxHandle, { key: "ArrowLeft" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 20, max: 79 })
+  })
+
+  test("Home key moves min handle to minLimit", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.keyDown(minHandle, { key: "Home" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 80 })
+  })
+
+  test("End key moves max handle to maxLimit", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const maxHandle = container.querySelectorAll(".rounded-full")[1]
+    fireEvent.keyDown(maxHandle, { key: "End" })
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 20, max: 100 })
+  })
+
+  test("ArrowRight on min handle does not call onChange when min would reach max", () => {
+    const { container } = render(
+      <Range minLimit={0} maxLimit={100} currentMin={79} currentMax={80} onChange={mockOnChange} />
+    )
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.keyDown(minHandle, { key: "ArrowRight" })
+    expect(mockOnChange).not.toHaveBeenCalled()
+  })
+
+  test("ArrowLeft on max handle does not call onChange when max would reach min", () => {
+    const { container } = render(
+      <Range minLimit={0} maxLimit={100} currentMin={20} currentMax={21} onChange={mockOnChange} />
+    )
+    const maxHandle = container.querySelectorAll(".rounded-full")[1]
+    fireEvent.keyDown(maxHandle, { key: "ArrowLeft" })
+    expect(mockOnChange).not.toHaveBeenCalled()
+  })
 })

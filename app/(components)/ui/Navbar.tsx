@@ -13,7 +13,11 @@ function NavLink({ href, label, active }: { href: string; label: string; active:
   return (
     <Link
       href={href}
-      className={active ? "text-blue-700 cursor-not-allowed" : "text-white"}
+      className={
+        active
+          ? "text-white font-semibold underline underline-offset-4 cursor-not-allowed"
+          : "text-gray-400 hover:text-white transition-colors"
+      }
       aria-disabled={active ? "true" : "false"}
       tabIndex={active ? -1 : 0}
     >
@@ -26,11 +30,11 @@ const Navbar = () => {
   const pathname = usePathname()
 
   return (
-    <div className="flex items-center justify-center gap-6">
+    <nav className="h-14 flex items-center justify-center gap-6 bg-gray-900 border-b border-gray-800 px-6">
       {links.map((link) => (
         <NavLink key={link.href} {...link} active={pathname === link.href} />
       ))}
-    </div>
+    </nav>
   )
 }
 

@@ -65,6 +65,28 @@ export default function Range({
     [isSteps, totalSteps, minLimit, maxLimit, currentMin, currentMax, onChange],
   )
 
+  const moveByKey = useCallback(
+    (key: string, isMin: boolean) => {
+      const lo = isSteps ? 0 : minLimit
+      const hi = isSteps ? totalSteps : maxLimit
+      const current = isMin ? currentMin : currentMax
+
+      let next: number
+      if (key === "ArrowRight" || key === "ArrowUp") next = current + 1
+      else if (key === "ArrowLeft" || key === "ArrowDown") next = current - 1
+      else if (key === "Home") next = lo
+      else if (key === "End") next = hi
+      else return
+
+      next = Math.min(Math.max(next, lo), hi)
+      setLastMoved(isMin ? "min" : "max")
+      setValidationError(null)
+      if (isMin && next < currentMax) onChange({ min: next, max: currentMax })
+      if (!isMin && next > currentMin) onChange({ min: currentMin, max: next })
+    },
+    [isSteps, totalSteps, minLimit, maxLimit, currentMin, currentMax, onChange],
+  )
+
   const stopDragging = () => setIsDragging(false)
 
   const { startDrag, startTouch } = useDragHandle(moveHandle, stopDragging)
@@ -137,11 +159,12 @@ export default function Range({
   const maxLabel = isSteps ? `$${steps![currentMax]?.toFixed(2)}` : String(currentMax)
 
   const handleClass = `absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2
-    hover:scale-110 hover:cursor-grab transition-transform`
+    hover:scale-110 hover:cursor-grab transition-transform
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black`
 
   return (
-    <div className="flex flex-col items-center">
-    <div className="flex gap-4 items-center p-20">
+    <div className="flex flex-col items-center gap-3 px-6 py-10 w-full max-w-lg">
+    <div className="flex gap-4 items-center w-full justify-center">
       {!isSteps && editing === "min" ? (
         <input
           className="w-16 text-left font-medium bg-transparent border-b border-white outline-none"
@@ -176,14 +199,40 @@ export default function Range({
             ))}
 
           <div
+            role="slider"
+            tabIndex={0}
+            aria-label="Mínimo"
+            aria-valuemin={isSteps ? 0 : minLimit}
+            aria-valuemax={isSteps ? totalSteps : maxLimit}
+            aria-valuenow={currentMin}
+            aria-valuetext={minLabel}
             onMouseDown={() => onMouseDown(true)}
             onTouchStart={() => onTouchStart(true)}
+            onKeyDown={(e) => {
+              if (["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Home","End"].includes(e.key)) {
+                e.preventDefault()
+                moveByKey(e.key, true)
+              }
+            }}
             className={`${handleClass} ${lastMoved === "min" ? "z-20" : "z-10"}`}
             style={{ left: `${getPercent(currentMin)}%` }}
           />
           <div
+            role="slider"
+            tabIndex={0}
+            aria-label="Máximo"
+            aria-valuemin={isSteps ? 0 : minLimit}
+            aria-valuemax={isSteps ? totalSteps : maxLimit}
+            aria-valuenow={currentMax}
+            aria-valuetext={maxLabel}
             onMouseDown={() => onMouseDown(false)}
             onTouchStart={() => onTouchStart(false)}
+            onKeyDown={(e) => {
+              if (["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Home","End"].includes(e.key)) {
+                e.preventDefault()
+                moveByKey(e.key, false)
+              }
+            }}
             className={`${handleClass} ${lastMoved === "max" ? "z-20" : "z-10"}`}
             style={{ left: `${getPercent(currentMax)}%` }}
           />
@@ -205,7 +254,7 @@ export default function Range({
       )}
     </div>
       {validationError && (
-        <p className="text-red-400 text-sm -mt-14 pb-4">{validationError}</p>
+        <p className="text-red-400 text-sm">{validationError}</p>
       )}
     </div>
   )

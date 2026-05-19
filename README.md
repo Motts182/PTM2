@@ -1,30 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mango — Range Component · Technical Test
 
-## Getting Started
+Custom dual-handle range slider built with Next.js 16, React 19, TypeScript and Tailwind CSS v4.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 18+
+- npm 9+
+
+## Instalación
 
 ```bash
- npm run dev:all
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Ejecución
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+El proyecto requiere dos servidores corriendo en paralelo: Next.js en el puerto 8080 y un mock API (json-server) en el puerto 3001.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev:all
+```
 
-## Learn More
+Abre [http://localhost:8080](http://localhost:8080) en el navegador.
 
-To learn more about Next.js, take a look at the following resources:
+Para correr solo el frontend (sin mock API, usa valores por defecto):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tests
 
-## Deploy on Vercel
+```bash
+npm test
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Los tests usan Jest + React Testing Library. No requieren que los servidores estén corriendo.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Estructura del proyecto
+
+```
+app/
+├── (components)/
+│   ├── exercises/
+│   │   ├── Exercise1.tsx      # Componente cliente — slider de rango libre
+│   │   └── Exercise2.tsx      # Componente cliente — slider de pasos fijos
+│   └── ui/
+│       ├── Range.tsx          # Componente <Range /> unificado (libre + pasos)
+│       ├── Navbar.tsx         # Barra de navegación
+│       └── useDragHandle.ts   # Hook de arrastre (mouse y touch)
+├── exercise1/
+│   └── page.tsx               # Server Component — fetch /exercise1
+├── exercise2/
+│   └── page.tsx               # Server Component — fetch /exercise2
+├── layout.tsx
+└── page.tsx                   # Página principal
+db.json                        # Datos del mock API
+```
+
+## Ejercicios
+
+### Exercise 1 — Rango libre (`/exercise1`)
+
+Slider con mínimo y máximo definidos por la API (`GET /exercise1` → `{ min, max }`). El usuario puede arrastrar los handles o hacer clic en los labels numéricos para escribir un valor directamente. Se valida que el valor esté dentro del rango permitido.
+
+### Exercise 2 — Pasos fijos (`/exercise2`)
+
+Slider cuyos valores posibles son una lista discreta de precios (`GET /exercise2` → `{ rangeValues: number[] }`). Los handles solo pueden posicionarse en los valores de la lista. Los labels muestran el precio formateado como moneda.
+
+## Componente `<Range />`
+
+```tsx
+// Modo libre
+<Range
+  minLimit={0}
+  maxLimit={100}
+  currentMin={20}
+  currentMax={80}
+  onChange={({ min, max }) => ...}
+/>
+
+// Modo pasos fijos
+<Range
+  steps={[1.99, 5.99, 10.99, 30.99, 50.99, 70.99]}
+  currentMin={0}
+  currentMax={5}
+  onChange={({ min, max }) => ...}
+/>
+```
+
+| Prop | Tipo | Descripción |
+|---|---|---|
+| `steps` | `number[]` | Lista de valores discretos. Si se pasa, activa el modo pasos. |
+| `minLimit` | `number` | Valor mínimo absoluto (modo libre). Default: `0`. |
+| `maxLimit` | `number` | Valor máximo absoluto (modo libre). Default: `100`. |
+| `currentMin` | `number` | Índice o valor actual del handle mínimo. |
+| `currentMax` | `number` | Índice o valor actual del handle máximo. |
+| `onChange` | `({ min, max }) => void` | Callback invocado al mover un handle. |
+
+### Interacción
+
+- **Arrastre** con mouse y touch (mobile)
+- **Clic en label** (modo libre) para escribir un valor exacto
+- **Teclado**: `←` `→` `↑` `↓` mueven el handle de uno en uno; `Home` va al mínimo, `End` al máximo
+- **Cursor**: `grab` al hacer hover, `grabbing` durante el arrastre
+- **ARIA**: `role="slider"` con `aria-valuemin`, `aria-valuemax`, `aria-valuenow`, `aria-valuetext`

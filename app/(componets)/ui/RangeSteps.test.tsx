@@ -21,6 +21,14 @@ describe("Range — steps mode", () => {
     expect(screen.getByText("$50.99")).toBeInTheDocument()
   })
 
+  test("labels are not editable — clicking them does not open an input", () => {
+    render(
+      <Range steps={mockValues} currentMin={1} currentMax={4} onChange={mockOnChange} />
+    )
+    fireEvent.click(screen.getByText("$5.99"))
+    expect(screen.queryByRole("textbox")).toBeNull()
+  })
+
   test("promotes dragged handle to z-20 and demotes the other to z-10", () => {
     const { container } = render(
       <Range steps={mockValues} currentMin={0} currentMax={5} onChange={mockOnChange} />
@@ -30,6 +38,14 @@ describe("Range — steps mode", () => {
     fireEvent.mouseDown(maxHandle)
     expect(maxHandle).toHaveClass("z-20")
     expect(minHandle).toHaveClass("z-10")
+  })
+
+  test("handles have cursor-grab class", () => {
+    const { container } = render(
+      <Range steps={mockValues} currentMin={0} currentMax={5} onChange={mockOnChange} />
+    )
+    const handles = container.querySelectorAll(".rounded-full")
+    handles.forEach((h) => expect(h).toHaveClass("cursor-grab"))
   })
 
   test("renders one step marker per value", () => {
@@ -55,8 +71,7 @@ describe("Range — steps mode", () => {
 
     const [minHandle] = container.querySelectorAll(".rounded-full")
     fireEvent.mouseDown(minHandle)
-    // 40% of 200 = clientX 80 → exactStep = 0.4 * 5 = 2 → closestStep = 2
-    fireEvent.mouseMove(document, { clientX: 80 })
+    fireEvent.mouseMove(document, { clientX: 80 }) // 40% → step 2
 
     expect(mockOnChange).toHaveBeenCalledWith({ min: 2, max: 5 })
   })
@@ -70,8 +85,7 @@ describe("Range — steps mode", () => {
 
     const maxHandle = container.querySelectorAll(".rounded-full")[1]
     fireEvent.mouseDown(maxHandle)
-    // 60% of 200 = clientX 120 → exactStep = 0.6 * 5 = 3 → closestStep = 3
-    fireEvent.mouseMove(document, { clientX: 120 })
+    fireEvent.mouseMove(document, { clientX: 120 }) // 60% → step 3
 
     expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 3 })
   })
@@ -85,8 +99,7 @@ describe("Range — steps mode", () => {
 
     const [minHandle] = container.querySelectorAll(".rounded-full")
     fireEvent.mouseDown(minHandle)
-    // 80% of 200 = clientX 160 → exactStep = 0.8 * 5 = 4 > currentMaxIndex(3)
-    fireEvent.mouseMove(document, { clientX: 160 })
+    fireEvent.mouseMove(document, { clientX: 160 }) // 80% → step 4 > currentMax(3)
 
     expect(mockOnChange).not.toHaveBeenCalled()
   })

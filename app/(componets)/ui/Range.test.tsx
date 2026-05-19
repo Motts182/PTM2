@@ -19,6 +19,22 @@ describe("Range — free mode", () => {
 
   beforeEach(() => jest.clearAllMocks())
 
+  test("handles have cursor-grab class by default", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    container.querySelectorAll(".rounded-full").forEach((h) =>
+      expect(h).toHaveClass("cursor-grab"),
+    )
+  })
+
+  test("handles switch to cursor-grabbing while dragging", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.mouseDown(minHandle)
+    container.querySelectorAll(".rounded-full").forEach((h) =>
+      expect(h).toHaveClass("cursor-grabbing"),
+    )
+  })
+
   test("renders min and max values", () => {
     render(<Range {...defaultProps} />)
     expect(screen.getByText("20")).toBeInTheDocument()
@@ -113,5 +129,88 @@ describe("Range — free mode", () => {
     fireEvent.mouseMove(document, { clientX: 50 })
 
     expect(mockOnChange).not.toHaveBeenCalled()
+  })
+
+  test("clicking min label shows an input with its current value", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("20"))
+
+    expect(screen.getByRole("textbox")).toHaveValue("20")
+  })
+
+  test("clicking max label shows an input with its current value", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("80"))
+
+    expect(screen.getByRole("textbox")).toHaveValue("80")
+  })
+
+  test("pressing Enter on min label input calls onChange with the new value", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("20"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "30" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 30, max: 80 })
+  })
+
+  test("pressing Enter on max label input calls onChange with the new value", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("80"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "70" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 20, max: 70 })
+  })
+
+  test("blurring the input commits the value", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("20"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "35" } })
+    fireEvent.blur(input)
+
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 35, max: 80 })
+  })
+
+  test("pressing Escape cancels the edit without calling onChange", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("20"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "99" } })
+    fireEvent.keyDown(input, { key: "Escape" })
+
+    expect(mockOnChange).not.toHaveBeenCalled()
+    expect(screen.getByText("20")).toBeInTheDocument()
+  })
+
+  test("does not call onChange when typed min value would exceed max", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("20"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "90" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+
+    expect(mockOnChange).not.toHaveBeenCalled()
+  })
+
+  test("clamps typed value to minLimit when below range", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("20"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "-50" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+
+    expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 80 })
   })
 })

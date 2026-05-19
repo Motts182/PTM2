@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useCallback, useState } from "react"
+import { useRef, useCallback, useState, useEffect } from "react"
 import { useDragHandle } from "./useDragHandle"
 
 interface RangeProps {
@@ -21,10 +21,22 @@ export default function Range({
   onChange,
 }: RangeProps) {
   const [lastMoved, setLastMoved] = useState<"min" | "max" | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [editing, setEditing] = useState<"min" | "max" | null>(null)
+  const [editValue, setEditValue] = useState("")
   const trackRef = useRef<HTMLDivElement>(null)
 
   const isSteps = steps !== undefined && steps.length > 0
   const totalSteps = isSteps ? steps.length - 1 : 0
+
+  useEffect(() => {
+    document.body.style.cursor = isDragging ? "grabbing" : ""
+    document.body.style.userSelect = isDragging ? "none" : ""
+    return () => {
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
+    }
+  }, [isDragging])
 
   const getPercent = (value: number) =>
     isSteps
@@ -52,26 +64,74 @@ export default function Range({
     [isSteps, totalSteps, minLimit, maxLimit, currentMin, currentMax, onChange],
   )
 
-  const { startDrag, startTouch } = useDragHandle(moveHandle)
+  const stopDragging = () => setIsDragging(false)
+
+  const { startDrag, startTouch } = useDragHandle(moveHandle, stopDragging)
 
   const onMouseDown = (isMin: boolean) => {
     setLastMoved(isMin ? "min" : "max")
+    setIsDragging(true)
     startDrag(isMin)
   }
 
   const onTouchStart = (isMin: boolean) => {
     setLastMoved(isMin ? "min" : "max")
+    setIsDragging(true)
     startTouch(isMin)
   }
+
+  const startEdit = (which: "min" | "max") => {
+    const current = which === "min" ? currentMin : currentMax
+    setEditValue(String(current))
+    setEditing(which)
+  }
+
+  const commitEdit = (which: "min" | "max") => {
+    setEditing(null)
+    const val = parseInt(editValue, 10)
+    if (isNaN(val)) return
+    const clamped = Math.min(Math.max(val, minLimit), maxLimit)
+    if (which === "min" && clamped < currentMax) onChange({ min: clamped, max: currentMax })
+    if (which === "max" && clamped > currentMin) onChange({ min: currentMin, max: clamped })
+  }
+
+  const labelInputProps = (which: "min" | "max") => ({
+    value: editValue,
+    autoFocus: true,
+    inputMode: "decimal" as const,
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => setEditValue(e.target.value),
+    onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.select(),
+    onBlur: () => commitEdit(which),
+    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") commitEdit(which)
+      if (e.key === "Escape") setEditing(null)
+    },
+  })
 
   if (steps !== undefined && steps.length === 0) return null
 
   const minLabel = isSteps ? `$${steps![currentMin]?.toFixed(2)}` : String(currentMin)
   const maxLabel = isSteps ? `$${steps![currentMax]?.toFixed(2)}` : String(currentMax)
 
+  const handleClass = `absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2
+    hover:scale-110 transition-transform
+    ${isDragging ? "cursor-grabbing" : "cursor-grab"}`
+
   return (
     <div className="flex gap-4 items-center p-20">
-      <span className="w-16 text-left font-medium">{minLabel}</span>
+      {!isSteps && editing === "min" ? (
+        <input
+          className="w-16 text-left font-medium bg-transparent border-b border-white outline-none"
+          {...labelInputProps("min")}
+        />
+      ) : (
+        <span
+          className={`w-16 text-left font-medium ${!isSteps ? "cursor-pointer hover:opacity-70" : ""}`}
+          onClick={!isSteps ? () => startEdit("min") : undefined}
+        >
+          {minLabel}
+        </span>
+      )}
 
       <div className="relative w-64 h-1 bg-gray-600 rounded" ref={trackRef}>
         <div className="relative w-64 h-1">
@@ -95,23 +155,31 @@ export default function Range({
           <div
             onMouseDown={() => onMouseDown(true)}
             onTouchStart={() => onTouchStart(true)}
-            className={`absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2 cursor-pointer hover:scale-110 transition-transform ${
-              lastMoved === "min" ? "z-20" : "z-10"
-            }`}
+            className={`${handleClass} ${lastMoved === "min" ? "z-20" : "z-10"}`}
             style={{ left: `${getPercent(currentMin)}%` }}
           />
           <div
             onMouseDown={() => onMouseDown(false)}
             onTouchStart={() => onTouchStart(false)}
-            className={`absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2 cursor-pointer hover:scale-110 transition-transform ${
-              lastMoved === "max" ? "z-20" : "z-10"
-            }`}
+            className={`${handleClass} ${lastMoved === "max" ? "z-20" : "z-10"}`}
             style={{ left: `${getPercent(currentMax)}%` }}
           />
         </div>
       </div>
 
-      <span className="w-16 text-right font-medium">{maxLabel}</span>
+      {!isSteps && editing === "max" ? (
+        <input
+          className="w-16 text-right font-medium bg-transparent border-b border-white outline-none"
+          {...labelInputProps("max")}
+        />
+      ) : (
+        <span
+          className={`w-16 text-right font-medium ${!isSteps ? "cursor-pointer hover:opacity-70" : ""}`}
+          onClick={!isSteps ? () => startEdit("max") : undefined}
+        >
+          {maxLabel}
+        </span>
+      )}
     </div>
   )
 }

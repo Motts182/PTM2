@@ -4,9 +4,7 @@ import { useState, useEffect } from "react"
 import Range from "@/app/(componets)/ui/Range"
 
 export default function Exercise1() {
-  // Estos valores vendrian de tu fetch al servicio mock 
   const [limits, setLimits] = useState({ min: 1, max: 100 })
-  // Este es el estado que el padre "escucha" y controla
   const [selection, setSelection] = useState({ min: 1, max: 100 })
 
   useEffect(() => {

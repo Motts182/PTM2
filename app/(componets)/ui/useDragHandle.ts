@@ -11,5 +11,15 @@ export function useDragHandle(
     document.addEventListener("mouseup", onMouseUp)
   }
 
-  return { startDrag }
+  const startTouch = (isMin: boolean) => {
+    const onTouchMove = (e: TouchEvent) => onMove(e.touches[0].clientX, isMin)
+    const onTouchEnd = () => {
+      document.removeEventListener("touchmove", onTouchMove)
+      document.removeEventListener("touchend", onTouchEnd)
+    }
+    document.addEventListener("touchmove", onTouchMove)
+    document.addEventListener("touchend", onTouchEnd)
+  }
+
+  return { startDrag, startTouch }
 }

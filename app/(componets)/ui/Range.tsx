@@ -52,11 +52,16 @@ export default function Range({
     [isSteps, totalSteps, minLimit, maxLimit, currentMin, currentMax, onChange],
   )
 
-  const { startDrag } = useDragHandle(moveHandle)
+  const { startDrag, startTouch } = useDragHandle(moveHandle)
 
   const onMouseDown = (isMin: boolean) => {
     setLastMoved(isMin ? "min" : "max")
     startDrag(isMin)
+  }
+
+  const onTouchStart = (isMin: boolean) => {
+    setLastMoved(isMin ? "min" : "max")
+    startTouch(isMin)
   }
 
   if (isSteps && steps!.length === 0) return null
@@ -89,6 +94,7 @@ export default function Range({
 
           <div
             onMouseDown={() => onMouseDown(true)}
+            onTouchStart={() => onTouchStart(true)}
             className={`absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2 cursor-pointer hover:scale-110 transition-transform ${
               lastMoved === "min" ? "z-20" : "z-10"
             }`}
@@ -96,6 +102,7 @@ export default function Range({
           />
           <div
             onMouseDown={() => onMouseDown(false)}
+            onTouchStart={() => onTouchStart(false)}
             className={`absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2 cursor-pointer hover:scale-110 transition-transform ${
               lastMoved === "max" ? "z-20" : "z-10"
             }`}

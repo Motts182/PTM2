@@ -179,8 +179,8 @@ export default function Range({
         </span>
       )}
 
-      <div className="relative w-64 h-1 bg-gray-600 rounded" ref={trackRef}>
-        <div className="relative w-64 h-1">
+      <div className="relative w-40 sm:w-56 md:w-72 h-1 bg-gray-600 rounded" ref={trackRef}>
+        <div className="relative w-full h-1">
           <div
             className="absolute h-full bg-white"
             style={{

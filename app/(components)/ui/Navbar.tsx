@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import ChiptunePlayer from "./ChiptunePlayer"
 
 const links = [
   { href: "/", label: "Home" },
@@ -30,10 +31,14 @@ const Navbar = () => {
   const pathname = usePathname()
 
   return (
-    <nav className="h-14 flex items-center justify-center gap-6 bg-gray-900 border-b border-gray-800 px-6">
-      {links.map((link) => (
-        <NavLink key={link.href} {...link} active={pathname === link.href} />
-      ))}
+    <nav className="h-14 flex items-center justify-between bg-gray-900 border-b border-gray-800 px-6">
+      <span className="text-amber-400 font-bold text-sm tracking-widest select-none">MANGO</span>
+      <div className="flex items-center gap-6">
+        {links.map((link) => (
+          <NavLink key={link.href} {...link} active={pathname === link.href} />
+        ))}
+      </div>
+      <ChiptunePlayer />
     </nav>
   )
 }

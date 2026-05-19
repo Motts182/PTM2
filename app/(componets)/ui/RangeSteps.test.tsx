@@ -1,17 +1,17 @@
-import RangeSteps from "@/app/(componets)/ui/RangeSteps"
+import Range from "@/app/(componets)/ui/Range"
 import "@testing-library/jest-dom"
 import { render, screen, fireEvent } from "@testing-library/react"
 
-describe("Componente RangeSteps (Unit Tests)", () => {
+describe("Componente Range con steps (Unit Tests)", () => {
   const mockOnChange = jest.fn()
   const mockValues = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99]
 
   test("You must render the labels formatted as currency", () => {
     render(
-      <RangeSteps
-        values={mockValues}
-        currentMinIndex={1}
-        currentMaxIndex={4}
+      <Range
+        steps={mockValues}
+        currentMin={1}
+        currentMax={4}
         onChange={mockOnChange}
       />
     )
@@ -22,10 +22,10 @@ describe("Componente RangeSteps (Unit Tests)", () => {
 
   test("You must change the priority z-index when clicking a handle", () => {
     const { container } = render(
-      <RangeSteps
-        values={mockValues}
-        currentMinIndex={0}
-        currentMaxIndex={5}
+      <Range
+        steps={mockValues}
+        currentMin={0}
+        currentMax={5}
         onChange={mockOnChange}
       />
     )
@@ -34,7 +34,6 @@ describe("Componente RangeSteps (Unit Tests)", () => {
     const minHandle = handles[0]
     const maxHandle = handles[1]
 
-    // Al clickear el máximo, se le debe inyectar la clase z-20
     fireEvent.mouseDown(maxHandle)
     expect(maxHandle).toHaveClass("z-20")
     expect(minHandle).toHaveClass("z-10")

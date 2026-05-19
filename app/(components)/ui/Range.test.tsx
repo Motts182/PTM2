@@ -1,4 +1,4 @@
-import Range from "@/app/(componets)/ui/Range"
+import Range from "@/app/(components)/ui/Range"
 import "@testing-library/jest-dom"
 import { render, screen, fireEvent } from "@testing-library/react"
 

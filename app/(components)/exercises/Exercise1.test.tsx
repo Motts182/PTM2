@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import "@testing-library/jest-dom"
-import Exercise1 from "@/app/(componets)/exercises/Exercise1"
+import Exercise1 from "@/app/(components)/exercises/Exercise1"
 
 describe("Exercise1", () => {
   test("renders valor mínimo/máximo seteado labels from props", () => {

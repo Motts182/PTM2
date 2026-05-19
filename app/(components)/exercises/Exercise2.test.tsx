@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import "@testing-library/jest-dom"
-import Exercise2 from "@/app/(componets)/exercises/Exercise2"
+import Exercise2 from "@/app/(components)/exercises/Exercise2"
 
 const prices = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99]
 

@@ -1,4 +1,4 @@
-import Exercise2 from "@/app/(componets)/exercises/Exercise2"
+import Exercise2 from "@/app/(components)/exercises/Exercise2"
 
 export default async function Page() {
   let steps: number[] = []

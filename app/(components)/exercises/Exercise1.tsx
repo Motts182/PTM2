@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import Range from "@/app/(componets)/ui/Range"
+import Range from "@/app/(components)/ui/Range"
 
 interface Props {
   min: number

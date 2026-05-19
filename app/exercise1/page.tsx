@@ -1,4 +1,4 @@
-import Exercise1 from "@/app/(componets)/exercises/Exercise1"
+import Exercise1 from "@/app/(components)/exercises/Exercise1"
 
 export default async function Page() {
   let min = 1

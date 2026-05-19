@@ -64,7 +64,7 @@ export default function Range({
     startTouch(isMin)
   }
 
-  if (isSteps && steps!.length === 0) return null
+  if (steps !== undefined && steps.length === 0) return null
 
   const minLabel = isSteps ? `$${steps![currentMin]?.toFixed(2)}` : String(currentMin)
   const maxLabel = isSteps ? `$${steps![currentMax]?.toFixed(2)}` : String(currentMax)

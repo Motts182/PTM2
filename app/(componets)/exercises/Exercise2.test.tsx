@@ -1,40 +1,23 @@
-import Exercise2 from "@/app/(componets)/exercises/Exercise2"
+import { render, screen } from "@testing-library/react"
 import "@testing-library/jest-dom"
-import { render, screen, waitFor } from "@testing-library/react"
+import Exercise2 from "@/app/(componets)/exercises/Exercise2"
 
-global.fetch = jest.fn()
+const prices = [1.99, 5.99, 10.99, 30.99, 50.99, 70.99]
 
-describe("Componente Exercise2 (Integration Test)", () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
-  test("You need to call the mock API, set the fixed prices, and initialize the RangeSteps.", async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => ({
-        rangeValues: [1.99, 5.99, 10.99, 30.99, 50.99, 70.99],
-      }),
-    })
-
-    render(<Exercise2 />)
-
-    expect(global.fetch).toHaveBeenCalledWith("http://localhost:3001/exercise2")
-
-    await waitFor(() => {
-      expect(screen.getByText("$1.99")).toBeInTheDocument()
-    })
+describe("Exercise2", () => {
+  test("renders first and last prices as currency labels", () => {
+    render(<Exercise2 steps={prices} />)
+    expect(screen.getByText("$1.99")).toBeInTheDocument()
     expect(screen.getByText("$70.99")).toBeInTheDocument()
   })
 
-  test("It handles gracefully if the API returns an empty array.", async () => {
-    ;(global.fetch as jest.Mock).mockResolvedValueOnce({
-      json: async () => ({ rangeValues: [] }),
-    })
+  test("renders one step marker per price", () => {
+    const { container } = render(<Exercise2 steps={prices} />)
+    expect(container.querySelectorAll(".bg-gray-400")).toHaveLength(prices.length)
+  })
 
-    render(<Exercise2 />)
-
-    await waitFor(() => {
-      expect(screen.queryByText("$1.99")).not.toBeInTheDocument()
-    })
+  test("renders nothing when steps is empty", () => {
+    const { container } = render(<Exercise2 steps={[]} />)
+    expect(container.querySelector(".rounded-full")).toBeNull()
   })
 })

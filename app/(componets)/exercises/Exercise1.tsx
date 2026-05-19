@@ -1,30 +1,24 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Range from "@/app/(componets)/ui/Range"
 
-export default function Exercise1() {
-  const [limits, setLimits] = useState({ min: 1, max: 100 })
-  const [selection, setSelection] = useState({ min: 1, max: 100 })
+interface Props {
+  min: number
+  max: number
+}
 
-  useEffect(() => {
-    const fetchLimits = async () => {
-      const res = await fetch('http://localhost:3001/exercise1');
-      const data = await res.json();
-      setLimits(data)
-      setSelection(data)
-    }
-    fetchLimits()
-  }, [])
+export default function Exercise1({ min, max }: Props) {
+  const [selection, setSelection] = useState({ min, max })
 
   return (
-    <section className="flex flex-col items-center">      
+    <section className="flex flex-col items-center">
       <Range
-        minLimit={limits.min}
-        maxLimit={limits.max}
+        minLimit={min}
+        maxLimit={max}
         currentMin={selection.min}
         currentMax={selection.max}
-        onChange={(newValues) => setSelection(newValues)}
+        onChange={setSelection}
       />
     </section>
   )

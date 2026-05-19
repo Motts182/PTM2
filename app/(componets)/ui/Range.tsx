@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useCallback, useState } from "react"
+import { useDragHandle } from "./useDragHandle"
 
 interface RangeProps {
   steps?: number[]
@@ -51,15 +52,11 @@ export default function Range({
     [isSteps, totalSteps, minLimit, maxLimit, currentMin, currentMax, onChange],
   )
 
+  const { startDrag } = useDragHandle(moveHandle)
+
   const onMouseDown = (isMin: boolean) => {
     setLastMoved(isMin ? "min" : "max")
-    const onMouseMove = (e: MouseEvent) => moveHandle(e.clientX, isMin)
-    const onMouseUp = () => {
-      document.removeEventListener("mousemove", onMouseMove)
-      document.removeEventListener("mouseup", onMouseUp)
-    }
-    document.addEventListener("mousemove", onMouseMove)
-    document.addEventListener("mouseup", onMouseUp)
+    startDrag(isMin)
   }
 
   if (isSteps && steps!.length === 0) return null

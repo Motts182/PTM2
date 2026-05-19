@@ -3,38 +3,35 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+const links = [
+  { href: "/", label: "Home" },
+  { href: "/exercise1", label: "Exercise 1" },
+  { href: "/exercise2", label: "Exercise 2" },
+]
+
+function NavLink({ href, label, active }: { href: string; label: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className={active ? "text-blue-700 cursor-not-allowed" : "text-white"}
+      aria-disabled={active ? "true" : "false"}
+      tabIndex={active ? -1 : 0}
+    >
+      {label}
+    </Link>
+  )
+}
+
 const Navbar = () => {
   const pathname = usePathname()
-  
+
   return (
     <div className="flex items-center justify-center gap-6">
-      <Link
-        className={`${pathname == "/" ? "text-blue-700 cursor-not-allowed" : "text-white"}`}
-        href="/"
-        aria-disabled={pathname == "/" ? "true" : "false"}
-        tabIndex={pathname == "/" ? -1 : 0}
-      >
-        Home
-      </Link>
-
-      <Link
-        className={`${pathname == "/exercise1" ? "text-blue-700 cursor-not-allowed" : "text-white"}`}
-        href="/exercise1"
-        aria-disabled={pathname == "/exercise1" ? "true" : "false"}
-        tabIndex={pathname == "/exercise1" ? -1 : 0}
-      >
-        Exercise 1
-      </Link>
-
-      <Link
-        className={`${pathname == "/exercise2" ? "text-blue-700 cursor-not-allowed" : "text-white"}`}
-        href="/exercise2"
-        aria-disabled={pathname == "/exercise2" ? "true" : "false"}
-        tabIndex={pathname == "/exercise2" ? -1 : 0}
-      >
-        Exercise 2
-      </Link>
+      {links.map((link) => (
+        <NavLink key={link.href} {...link} active={pathname === link.href} />
+      ))}
     </div>
   )
 }
+
 export default Navbar

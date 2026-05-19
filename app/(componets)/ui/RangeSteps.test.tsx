@@ -40,12 +40,12 @@ describe("Range — steps mode", () => {
     expect(minHandle).toHaveClass("z-10")
   })
 
-  test("handles have cursor-grab class", () => {
+  test("handles have hover:cursor-grab class", () => {
     const { container } = render(
       <Range steps={mockValues} currentMin={0} currentMax={5} onChange={mockOnChange} />
     )
     const handles = container.querySelectorAll(".rounded-full")
-    handles.forEach((h) => expect(h).toHaveClass("cursor-grab"))
+    handles.forEach((h) => expect(h).toHaveClass("hover:cursor-grab"))
   })
 
   test("renders one step marker per value", () => {

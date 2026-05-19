@@ -24,6 +24,7 @@ export default function Range({
   const [isDragging, setIsDragging] = useState(false)
   const [editing, setEditing] = useState<"min" | "max" | null>(null)
   const [editValue, setEditValue] = useState("")
+  const [validationError, setValidationError] = useState<string | null>(null)
   const trackRef = useRef<HTMLDivElement>(null)
 
   const isSteps = steps !== undefined && steps.length > 0
@@ -69,6 +70,7 @@ export default function Range({
   const { startDrag, startTouch } = useDragHandle(moveHandle, stopDragging)
 
   const onMouseDown = (isMin: boolean) => {
+    setValidationError(null)
     setLastMoved(isMin ? "min" : "max")
     setIsDragging(true)
     startDrag(isMin)
@@ -81,6 +83,7 @@ export default function Range({
   }
 
   const startEdit = (which: "min" | "max") => {
+    setValidationError(null)
     const current = which === "min" ? currentMin : currentMax
     setEditValue(String(current))
     setEditing(which)
@@ -90,9 +93,29 @@ export default function Range({
     setEditing(null)
     const val = parseInt(editValue, 10)
     if (isNaN(val)) return
-    const clamped = Math.min(Math.max(val, minLimit), maxLimit)
-    if (which === "min" && clamped < currentMax) onChange({ min: clamped, max: currentMax })
-    if (which === "max" && clamped > currentMin) onChange({ min: currentMin, max: clamped })
+    if (which === "min") {
+      if (val < minLimit) {
+        setValidationError(`El valor mínimo permitido es ${minLimit}`)
+        return
+      }
+      if (val >= currentMax) {
+        setValidationError(`El valor mínimo debe ser menor que el máximo (${currentMax})`)
+        return
+      }
+      setValidationError(null)
+      onChange({ min: val, max: currentMax })
+    } else {
+      if (val > maxLimit) {
+        setValidationError(`El valor máximo permitido es ${maxLimit}`)
+        return
+      }
+      if (val <= currentMin) {
+        setValidationError(`El valor máximo debe ser mayor que el mínimo (${currentMin})`)
+        return
+      }
+      setValidationError(null)
+      onChange({ min: currentMin, max: val })
+    }
   }
 
   const labelInputProps = (which: "min" | "max") => ({
@@ -114,10 +137,10 @@ export default function Range({
   const maxLabel = isSteps ? `$${steps![currentMax]?.toFixed(2)}` : String(currentMax)
 
   const handleClass = `absolute w-6 h-6 bg-white rounded-full -top-2.5 -translate-x-1/2
-    hover:scale-110 transition-transform
-    ${isDragging ? "cursor-grabbing" : "cursor-grab"}`
+    hover:scale-110 hover:cursor-grab transition-transform`
 
   return (
+    <div className="flex flex-col items-center">
     <div className="flex gap-4 items-center p-20">
       {!isSteps && editing === "min" ? (
         <input
@@ -179,6 +202,10 @@ export default function Range({
         >
           {maxLabel}
         </span>
+      )}
+    </div>
+      {validationError && (
+        <p className="text-red-400 text-sm -mt-14 pb-4">{validationError}</p>
       )}
     </div>
   )

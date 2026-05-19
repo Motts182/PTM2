@@ -20,4 +20,9 @@ describe("Exercise2", () => {
     const { container } = render(<Exercise2 steps={[]} />)
     expect(container.querySelector(".rounded-full")).toBeNull()
   })
+
+  test("shows server error message when serverError is true", () => {
+    render(<Exercise2 steps={[]} serverError />)
+    expect(screen.getByText(/No se pudo cargar los valores del servidor/)).toBeInTheDocument()
+  })
 })

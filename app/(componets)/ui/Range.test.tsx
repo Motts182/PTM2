@@ -19,20 +19,26 @@ describe("Range — free mode", () => {
 
   beforeEach(() => jest.clearAllMocks())
 
-  test("handles have cursor-grab class by default", () => {
+  test("handles have hover:cursor-grab class", () => {
     const { container } = render(<Range {...defaultProps} />)
     container.querySelectorAll(".rounded-full").forEach((h) =>
-      expect(h).toHaveClass("cursor-grab"),
+      expect(h).toHaveClass("hover:cursor-grab"),
     )
   })
 
-  test("handles switch to cursor-grabbing while dragging", () => {
+  test("body cursor becomes grabbing while dragging", () => {
     const { container } = render(<Range {...defaultProps} />)
     const [minHandle] = container.querySelectorAll(".rounded-full")
     fireEvent.mouseDown(minHandle)
-    container.querySelectorAll(".rounded-full").forEach((h) =>
-      expect(h).toHaveClass("cursor-grabbing"),
-    )
+    expect(document.body.style.cursor).toBe("grabbing")
+  })
+
+  test("body cursor resets after drag ends", () => {
+    const { container } = render(<Range {...defaultProps} />)
+    const [minHandle] = container.querySelectorAll(".rounded-full")
+    fireEvent.mouseDown(minHandle)
+    fireEvent.mouseUp(document)
+    expect(document.body.style.cursor).toBe("")
   })
 
   test("renders min and max values", () => {
@@ -192,7 +198,7 @@ describe("Range — free mode", () => {
     expect(screen.getByText("20")).toBeInTheDocument()
   })
 
-  test("does not call onChange when typed min value would exceed max", () => {
+  test("shows error when typed min value would reach or exceed max", () => {
     render(<Range {...defaultProps} />)
 
     fireEvent.click(screen.getByText("20"))
@@ -201,9 +207,22 @@ describe("Range — free mode", () => {
     fireEvent.keyDown(input, { key: "Enter" })
 
     expect(mockOnChange).not.toHaveBeenCalled()
+    expect(screen.getByText(/El valor mínimo debe ser menor que el máximo/)).toBeInTheDocument()
   })
 
-  test("clamps typed value to minLimit when below range", () => {
+  test("shows error when typed max value would reach or go below min", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("80"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "10" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+
+    expect(mockOnChange).not.toHaveBeenCalled()
+    expect(screen.getByText(/El valor máximo debe ser mayor que el mínimo/)).toBeInTheDocument()
+  })
+
+  test("shows error and does not call onChange when typed min value is below minLimit", () => {
     render(<Range {...defaultProps} />)
 
     fireEvent.click(screen.getByText("20"))
@@ -211,6 +230,19 @@ describe("Range — free mode", () => {
     fireEvent.change(input, { target: { value: "-50" } })
     fireEvent.keyDown(input, { key: "Enter" })
 
-    expect(mockOnChange).toHaveBeenCalledWith({ min: 0, max: 80 })
+    expect(mockOnChange).not.toHaveBeenCalled()
+    expect(screen.getByText(/El valor mínimo permitido es 0/)).toBeInTheDocument()
+  })
+
+  test("shows error and does not call onChange when typed max value exceeds maxLimit", () => {
+    render(<Range {...defaultProps} />)
+
+    fireEvent.click(screen.getByText("80"))
+    const input = screen.getByRole("textbox")
+    fireEvent.change(input, { target: { value: "150" } })
+    fireEvent.keyDown(input, { key: "Enter" })
+
+    expect(mockOnChange).not.toHaveBeenCalled()
+    expect(screen.getByText(/El valor máximo permitido es 100/)).toBeInTheDocument()
   })
 })
